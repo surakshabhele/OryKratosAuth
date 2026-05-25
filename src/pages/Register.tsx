@@ -130,7 +130,7 @@ const handleRegister = async (
     alert("Registration successful");
   } catch (error) {
     console.error(error, "axios i think");
-    console.log(error.response?.data);
+    // console.log(error.response?.data);
   }
 };
 
@@ -191,7 +191,7 @@ export default function Register({
             )
           }
         >
-          {/*
+        
           <InputField
             label="Full Name"
             type="text"
@@ -200,7 +200,7 @@ export default function Register({
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
           />
-          */}
+        
           <InputField
             label="Email"
             type="email"

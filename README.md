@@ -4,8 +4,8 @@ A React + Vite authentication UI wired to Ory browser flows.
 
 ## Features
 
-- Register screen
-- Login screen
+- Register and login screens backed by Ory browser flows
+- Google social sign-in via Ory Kratos OIDC
 - Forgot password flow
 - Email verification screen
 - Reset password flow
@@ -26,31 +26,57 @@ A React + Vite authentication UI wired to Ory browser flows.
 npm install
 ```
 
-### 2. Run Ory locally
+### 2. Configure Kratos for Google sign-in
 
-This project expects the Ory frontend API to be available locally.
+Sample Kratos files live in [`kratos/`](./kratos):
 
-The Vite dev server proxies requests from `/ory` to:
+- [`kratos/kratos.yml`](/home/suraksha/Projects/OryAuth/kratos/kratos.yml:1)
+- [`kratos/identity.schema.json`](/home/suraksha/Projects/OryAuth/kratos/identity.schema.json:1)
+- [`kratos/google.mapper.jsonnet`](/home/suraksha/Projects/OryAuth/kratos/google.mapper.jsonnet:1)
+
+Create a Google OAuth client and add this redirect URI exactly:
+
+```text
+http://127.0.0.1:4433/self-service/methods/oidc/callback/google
+```
+
+Then replace the placeholders in `kratos.yml`:
+
+- `YOUR_GOOGLE_CLIENT_ID`
+- `YOUR_GOOGLE_CLIENT_SECRET`
+
+The OIDC `session` hook is included so users who sign up with Google are logged in immediately after registration.
+
+### 3. Run Ory locally
+
+This project expects the Ory frontend API to be available locally at:
 
 ```text
 http://127.0.0.1:4433
 ```
 
-That proxy is configured in [vite.config.ts](/home/suraksha/Projects/OryAuth/vite.config.ts:1).
+The Vite dev server proxies requests from `/ory` to that address. That proxy is configured in [vite.config.ts](/home/suraksha/Projects/OryAuth/vite.config.ts:1).
 
-### 3. Start the app
+### 4. Start the app
 
 ```bash
 npm run dev
 ```
 
-### 4. Build for production
+Then open:
+
+```text
+http://127.0.0.1:3000/login
+http://127.0.0.1:3000/register
+```
+
+### 5. Build for production
 
 ```bash
 npm run build
 ```
 
-### 5. Preview the production build
+### 6. Preview the production build
 
 ```bash
 npm run preview

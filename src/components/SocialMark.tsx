@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 
 type SocialMarkProps = {
-  provider: "google" | "microsoft";
+  provider: string;
 };
 
 export default function SocialMark({
@@ -20,7 +20,7 @@ export default function SocialMark({
 
   return (
     <span className="social-mark google" aria-hidden="true">
-      G
+      {provider.charAt(0).toUpperCase() || "?"}
     </span>
   );
 }

@@ -2,7 +2,7 @@ import type { LoginFlow, RegistrationFlow, UiNode } from "@ory/client";
 
 type Flow = LoginFlow | RegistrationFlow;
 
-export type SocialProvider = "google";
+export type SocialProvider = string;
 
 type InputNode = UiNode & {
   attributes: {
@@ -45,16 +45,27 @@ export function getHiddenValue(
   return String(node?.attributes.value ?? "");
 }
 
-export function hasSocialProvider(
-  flow: Flow | null,
-  provider: SocialProvider,
-): boolean {
-  return !!flow?.ui.nodes.some(
-    (node) =>
-      node.group === "oidc" &&
-      isInputNode(node) &&
-      node.attributes.value === provider,
-  );
+export function getSocialProviders(flow: Flow | null): SocialProvider[] {
+  const providers = flow?.ui.nodes
+    .filter(
+      (node): node is InputNode =>
+        node.group === "oidc" &&
+        isInputNode(node) &&
+        node.attributes.name === "provider" &&
+        typeof node.attributes.value === "string",
+    )
+    .map((node) => node.attributes.value.trim())
+    .filter(Boolean);
+
+  return [...new Set(providers ?? [])];
+}
+
+export function getSocialProviderLabel(provider: SocialProvider): string {
+  return provider
+    .split(/[_-]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 }
 
 export function submitSocialFlow(

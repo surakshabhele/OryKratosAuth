@@ -13,7 +13,7 @@ services:
       - ./kratos/google.mapper.jsonnet:/etc/config/kratos/google.mapper.jsonnet:ro
       - ./kratos/start.sh:/etc/config/kratos/start.sh:ro
       - kratos-data:/var/lib/sqlite
-    command: sh /etc/config/kratos/start.sh
+    entrypoint: ["/bin/sh", "/etc/config/kratos/start.sh"]
     restart: unless-stopped
     depends_on:
       - mailslurper

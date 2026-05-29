@@ -17,7 +17,8 @@ import SocialMark from "../components/SocialMark";
 import { registerWithPassword } from "../utils/auth";
 import {
   getFlowError,
-  hasSocialProvider,
+  getSocialProviderLabel,
+  getSocialProviders,
   submitSocialFlow,
 } from "../utils/flow";
 import ory from "../utils/ory";
@@ -35,7 +36,7 @@ export default function Register(): ReactElement {
   const [isFlowLoading, setIsFlowLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const isGoogleAvailable = hasSocialProvider(flow, "google");
+  const socialProviders = getSocialProviders(flow);
 
   useEffect(() => {
     let active = true;
@@ -195,24 +196,26 @@ export default function Register(): ReactElement {
         <Divider text="Or Sign Up With" />
 
         <div className="social-row">
-          <button
-            className="social-btn"
-            type="button"
-            onClick={() => submitSocialFlow(flow, "google")}
-            disabled={!flow || isFlowLoading || !isGoogleAvailable}
-            title={
-              !isGoogleAvailable && !isFlowLoading
-                ? "Google sign-up is not enabled on the current Ory server."
-                : undefined
-            }
-          >
-            <SocialMark provider="google" />
-            Google
-          </button>
+          {socialProviders.map((provider) => {
+            const providerLabel = getSocialProviderLabel(provider);
+
+            return (
+              <button
+                key={provider}
+                className="social-btn"
+                type="button"
+                onClick={() => submitSocialFlow(flow, provider)}
+                disabled={!flow || isFlowLoading}
+              >
+                <SocialMark provider={provider} />
+                {providerLabel}
+              </button>
+            );
+          })}
         </div>
 
-        {!isFlowLoading && !isGoogleAvailable ? (
-          <p>Google sign-up is not enabled on the Ory server currently configured for this app.</p>
+        {!isFlowLoading && socialProviders.length === 0 ? (
+          <p>No social sign-up providers are enabled on the Ory server currently configured for this app.</p>
         ) : null}
 
         <p className="signup-copy">

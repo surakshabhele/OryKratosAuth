@@ -1,9 +1,27 @@
 import type { ReactElement } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { IconCheck, IconHelp, IconMoon } from "../components/AuthIcons";
+import { startLogout } from "../utils/auth";
 
 export default function ResetSuccess(): ReactElement {
   const navigate = useNavigate();
+  const [isLeaving, setIsLeaving] = useState(false);
+
+  async function handleBackToSignIn() {
+    setIsLeaving(true);
+
+    try {
+      const logoutUrl = await startLogout();
+
+      window.location.assign(logoutUrl);
+    } catch (error) {
+      console.error("Unable to start logout flow", error);
+      navigate("/login", { replace: true });
+      setIsLeaving(false);
+    }
+  }
+
   return (
     <main className="auth-shell auth-detail-shell">
       <span className="auth-brand">flflux.</span>
@@ -31,8 +49,13 @@ export default function ResetSuccess(): ReactElement {
 
         <p className="success-copy">You can now sign in with your new password.</p>
 
-        <button className="primary-action submit-btn" type="button" onClick={() => navigate("/login")}>
-          Back to Sign In
+        <button
+          className="primary-action submit-btn"
+          type="button"
+          onClick={handleBackToSignIn}
+          disabled={isLeaving}
+        >
+          {isLeaving ? "Opening Sign In..." : "Back to Sign In"}
         </button>
       </section>
     </main>

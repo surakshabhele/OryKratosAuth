@@ -13,7 +13,20 @@
         },
         "email": {
           "type": "string",
-          "format": "email"
+          "format": "email",
+          "ory.sh/kratos": {
+            "credentials": {
+              "password": {
+                "identifier": true
+              }
+            },
+            "recovery": {
+              "via": "email"
+            },
+            "verification": {
+              "via": "email"
+            }
+          }
         }
       },
       "required": ["email", "full_name"],

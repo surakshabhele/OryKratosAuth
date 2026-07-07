@@ -19,7 +19,6 @@ import {
   getFlowError,
   getSocialProviderLabel,
   getSocialProviders,
-  SUPPORTED_SOCIAL_PROVIDERS,
   submitSocialFlow,
 } from "../utils/flow";
 import ory from "../utils/ory";
@@ -37,7 +36,7 @@ export default function Register(): ReactElement {
   const [isFlowLoading, setIsFlowLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const socialProviders = SUPPORTED_SOCIAL_PROVIDERS;
+  const socialProviders = getSocialProviders(flow);
 
   useEffect(() => {
     let active = true;
@@ -98,14 +97,27 @@ export default function Register(): ReactElement {
     setFlowError("");
 
     try {
-      await registerWithPassword({
+      const result = await registerWithPassword({
         fullName,
         email,
         password,
         flow,
       });
 
-      navigate("/login", { replace: true });
+      const verificationStep = result.continue_with?.find(
+        (item): item is typeof item & { flow: { id: string } } =>
+          item.action === "show_verification_ui" && "flow" in item,
+      );
+
+      if (verificationStep) {
+        navigate(
+          `/verify-email?flow=${encodeURIComponent(verificationStep.flow.id)}&email=${encodeURIComponent(email)}`,
+          { replace: true },
+        );
+        return;
+      }
+
+      navigate(result.session ? "/dashboard" : "/login", { replace: true });
     } catch (error) {
       console.error("Unable to create account", error);
       setFlowError("Unable to create account. Please check your details.");
@@ -194,26 +206,30 @@ export default function Register(): ReactElement {
           </button>
         </form>
 
-        <Divider text="Or Sign Up With" />
+        {socialProviders.length > 0 ? (
+          <>
+            <Divider text="Or Sign Up With" />
 
-        <div className="social-row">
-          {socialProviders.map((provider) => {
-            const providerLabel = getSocialProviderLabel(provider);
+            <div className="social-row">
+              {socialProviders.map((provider) => {
+                const providerLabel = getSocialProviderLabel(provider);
 
-            return (
-              <button
-                key={provider}
-                className="social-btn"
-                type="button"
-                onClick={() => submitSocialFlow(flow, provider)}
-                disabled={!flow || isFlowLoading}
-              >
-                <SocialMark provider={provider} />
-                {providerLabel}
-              </button>
-            );
-          })}
-        </div>
+                return (
+                  <button
+                    key={provider}
+                    className="social-btn"
+                    type="button"
+                    onClick={() => submitSocialFlow(flow, provider)}
+                    disabled={!flow || isFlowLoading}
+                  >
+                    <SocialMark provider={provider} />
+                    {providerLabel}
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        ) : null}
 
         <p className="signup-copy">
           Already have an account?{" "}

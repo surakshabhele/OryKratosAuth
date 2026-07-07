@@ -1,14 +1,24 @@
 services:
+  mailslurper:
+    image: oryd/mailslurper:latest-smtps
+    ports:
+      - "7456:4436"
+      - "7457:7457"
+    volumes:
+      - ./mailslurper/config.json:/go/src/github.com/mailslurper/mailslurper/cmd/mailslurper/config.json:ro
+    restart: unless-stopped
+
   kratos:
     image: oryd/kratos:v1.3.1
     ports:
       - "5443:4433"
       - "5444:4434"
     environment:
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:?set GOOGLE_CLIENT_ID in .env}
-      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:?set GOOGLE_CLIENT_SECRET in .env}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
       GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
       GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+      SMTP_CONNECTION_URI: ${SMTP_CONNECTION_URI:-smtps://test:test@mailslurper:1025/?skip_ssl_verify=true}
     volumes:
       - ./kratos/kratos.yml:/etc/config/kratos/kratos.yml:ro
       - ./kratos/identity.schema.json:/etc/config/kratos/identity.schema.json:ro
@@ -18,15 +28,27 @@ services:
       - kratos-data:/var/lib/sqlite
     entrypoint: ["/bin/sh", "/etc/config/kratos/start.sh"]
     restart: unless-stopped
-    depends_on:
-      - mailslurper
 
-  mailslurper:
-    image: oryd/mailslurper:latest-smtps
-    ports:
-      - "5446:4436"
-      - "5447:4437"
+  kratos-courier:
+    image: oryd/kratos:v1.3.1
+    environment:
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+      SMTP_CONNECTION_URI: ${SMTP_CONNECTION_URI:-smtps://test:test@mailslurper:1025/?skip_ssl_verify=true}
+    volumes:
+      - ./kratos/kratos.yml:/etc/config/kratos/kratos.yml:ro
+      - ./kratos/identity.schema.json:/etc/config/kratos/identity.schema.json:ro
+      - ./kratos/google.mapper.jsonnet:/etc/config/kratos/google.mapper.jsonnet:ro
+      - ./kratos/github.mapper.jsonnet:/etc/config/kratos/github.mapper.jsonnet:ro
+      - ./kratos/start.sh:/etc/config/kratos/start.sh:ro
+      - kratos-data:/var/lib/sqlite
+    entrypoint: ["/bin/sh", "/etc/config/kratos/start.sh", "courier"]
     restart: unless-stopped
+    depends_on:
+      - kratos
+      - mailslurper
 
 volumes:
   kratos-data:

@@ -19,7 +19,6 @@ import {
   getFlowError,
   getSocialProviderLabel,
   getSocialProviders,
-  SUPPORTED_SOCIAL_PROVIDERS,
   submitSocialFlow,
 } from "../utils/flow";
 import ory from "../utils/ory";
@@ -34,7 +33,7 @@ export default function Login(): ReactElement {
   const [isFlowLoading, setIsFlowLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const socialProviders = SUPPORTED_SOCIAL_PROVIDERS;
+  const socialProviders = getSocialProviders(flow);
 
   useEffect(() => {
     let active = true;
@@ -179,26 +178,30 @@ export default function Login(): ReactElement {
           </button>
         </form>
 
-        <Divider text="Or Login With" />
+        {socialProviders.length > 0 ? (
+          <>
+            <Divider text="Or Login With" />
 
-        <div className="social-row">
-          {socialProviders.map((provider) => {
-            const providerLabel = getSocialProviderLabel(provider);
+            <div className="social-row">
+              {socialProviders.map((provider) => {
+                const providerLabel = getSocialProviderLabel(provider);
 
-            return (
-              <button
-                key={provider}
-                className="social-btn"
-                type="button"
-                onClick={() => submitSocialFlow(flow, provider)}
-                disabled={!flow || isFlowLoading}
-              >
-                <SocialMark provider={provider} />
-                {providerLabel}
-              </button>
-            );
-          })}
-        </div>
+                return (
+                  <button
+                    key={provider}
+                    className="social-btn"
+                    type="button"
+                    onClick={() => submitSocialFlow(flow, provider)}
+                    disabled={!flow || isFlowLoading}
+                  >
+                    <SocialMark provider={provider} />
+                    {providerLabel}
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        ) : null}
 
         <p className="signup-copy">
           Don&apos;t have an account?{" "}

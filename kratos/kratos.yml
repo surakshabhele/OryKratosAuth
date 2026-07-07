@@ -40,13 +40,13 @@ selfservice:
     - http://127.0.0.1:4455/login
     - http://127.0.0.1:4455/register
   methods:
+    link:
+      enabled: true
     password:
       enabled: true
-    oidc:
-      enabled: true
       config:
-        providers:
-__OIDC_PROVIDERS__
+        haveibeenpwned_enabled: false
+__OIDC_METHOD__
   flows:
     error:
       ui_url: http://127.0.0.1:4455/error
@@ -63,18 +63,10 @@ __OIDC_PROVIDERS__
         oidc:
           hooks:
             - hook: session
-    recovery:
-      enabled: true
-      ui_url: http://127.0.0.1:4455/forgot-password
-      use: code
-    verification:
-      enabled: true
-      ui_url: http://127.0.0.1:4455/verify-email
-      use: code
-      after:
-        default_browser_return_url: http://127.0.0.1:4455/login
+__RECOVERY_FLOW__
+__VERIFICATION_FLOW__
     settings:
-      ui_url: http://127.0.0.1:4455/login
+      ui_url: http://127.0.0.1:4455/reset-password
       privileged_session_max_age: 15m
       required_aal: highest_available
     logout:
@@ -99,5 +91,4 @@ identity:
       url: file:///etc/config/kratos/identity.schema.json
 
 courier:
-  smtp:
-    connection_uri: smtps://test:test@mailslurper:1025/?skip_ssl_verify=true
+__COURIER_CONFIG__

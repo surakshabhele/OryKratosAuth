@@ -47,20 +47,35 @@ If you also want GitHub sign-in, create a GitHub OAuth app and add this callback
 http://127.0.0.1:5443/self-service/methods/oidc/callback/github
 ```
 
-Then create a local `.env` file from `.env.example` and fill in:
+Then create a local `.env` file from `.env.example`:
 
 ```bash
 cp .env.example .env
 ```
 
 ```text
-GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=your-google-client-secret
-GITHUB_CLIENT_ID=your-github-client-id
-GITHUB_CLIENT_SECRET=your-github-client-secret
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
+SMTP_CONNECTION_URI=smtps://test:test@mailslurper:1025/?skip_ssl_verify=true
 ```
 
-`docker-compose.yml` passes those env vars into the Kratos container, and [`kratos/start.sh`](/home/suraksha/Projects/OryAuth/kratos/start.sh:1) renders the final runtime config so provider credentials are not hardcoded in git.
+You can leave the social login values blank for basic local email/password login. SMTP already defaults to MailSlurper.
+
+Only fill the values you need:
+
+- `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` for Google sign-in
+- `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` for GitHub sign-in
+- `SMTP_CONNECTION_URI` for email verification and forgot/reset password
+
+By default, the local stack uses MailSlurper over SMTP so you can receive codes without depending on Gmail. The MailSlurper inbox UI is available at `http://127.0.0.1:7456`, and it reads mail data from `http://127.0.0.1:7457`.
+
+If you already opened the old MailSlurper tab before, use the new URL above so the browser picks up the fresh service settings.
+
+`docker-compose.yml` passes those env vars into the Kratos containers, and [`kratos/start.sh`](/home/suraksha/Projects/OryAuth/kratos/start.sh:1) renders the final runtime config so provider credentials and SMTP settings are not hardcoded in git.
+
+If you want to send to a real inbox, replace the default MailSlurper URI with your SMTP provider. If you use Gmail for `SMTP_CONNECTION_URI`, use an App Password, not your normal sign-in password.
 
 The OIDC `session` hook is included so users who sign up with Google or GitHub are logged in immediately after registration.
 
